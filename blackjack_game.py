@@ -1,6 +1,5 @@
 import random
-
-cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+import os
 
 logo = """
 .------.            _     _            _    _            _    
@@ -13,92 +12,74 @@ logo = """
       `------'                           |__/           
 """
 
-def gameplay_choice():
-    global game, service
-    player.clear()
-    dealer.clear()
-    play_choice = input("Type y to play again or n to quit : ")
-    if play_choice == "y":
-        game = False
-        service = True
+
+
+def deal_card():
+    cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+    card = random.choice(cards)
+    return card
+
+def calculate_score(cards):
+    """ This function calculates the sum of cards """
+    if sum(cards) == 21 and len(cards) == 2:
+        return 0
+
+    if 11 in cards and sum(cards) > 21:
+        cards.remove(11)
+        cards.append(1)
+
+    return sum(cards)
+
+def compare(player_score, dealer_score):
+    if player_score ==  dealer_score:
+        return "Draw"
+    elif dealer_score == 0:
+        return "You lose dealer has blackjack :("
+    elif player_score == 0:
+        return "You win!!! with a blackjack :))"
+    elif player_score > 21:
+        return "You went over 21, you lose"
+    elif dealer_score > 21:
+        return "Dealer went over 21, You win!!"
+    elif player_score > dealer_score:
+        return "You win"
     else:
-        game = False
-        service = False
+        return "You lose"
 
-def show():
-    print(f"Player cards {player}")
-    print(f"Dealer cards {dealer}")
+def play_game():
+    is_game_over = False
+    player = []
+    dealer = []
 
-print(logo)
-print("Welcome to blackjack game!!")
-
-
-player = []
-player_sum = 0
-dealer = []
-dealer_sum = 0
-
-service = True
-game = True
-
-while service:
-
-    game = True
     for _ in range(2):
-        player.append(random.choice(cards))
-        dealer.append(random.choice(cards))
-    
-    player_sum = sum(player)    
-    dealer_sum = sum(dealer)
-    
-    print(f"Your cards are {player}")
-    print(f"Dealers card is {dealer[0]}")
+        player.append(deal_card())
+        dealer.append(deal_card())
 
-    if player_sum == 21:
-        print("You win!!!!")
-        game = False
-    elif player_sum > 21:
-        print("You cards exceed 21, You lose")
-        game = False
+    while not is_game_over:
+        player_sum = calculate_score(player)
+        dealer_sum = calculate_score(dealer)
 
-    while game:
-        choice = input("Type hit to get a new card and stand to play with existing ones : ").lower()
-        if choice == "hit":
-            player.append(random.choice(cards))
-            print(f"Your new cards are {player}")
-            dealer.append(random.choice(cards))
+        print(f"Player cards are {player} and sum is {player_sum}")
+        print(f"Dealers faceup card is {dealer[0]}")
 
-            player_sum = sum(player)
-            dealer_sum = sum(dealer)
-
-            if player_sum == 21:
-                show()
-                print("You win!!!!")
-                gameplay_choice()
-            elif player_sum > 21:
-                show()
-                print("You cards exceed 21, You lose")
-                gameplay_choice()
-
-        elif choice == "stand":
-            if dealer_sum <= 16:
-                dealer.append(random.choice(cards))
-                dealer_sum = sum(dealer)
-            if (21 - player_sum) < (21 - dealer_sum):
-                show()
-                print("You win!!!")
-                gameplay_choice()
-            elif (21 - player_sum) == (21 - dealer_sum):
-                show()
-                print("Draw.")
-                gameplay_choice()
+        if player_sum == 0 or dealer_sum == 0 or player_sum > 21:
+            is_game_over = True
+        else:
+            user_deal_choice = input("Type hit to add another card or stand to play with existing cards : ")
+            if user_deal_choice == "hit":
+                player.append(deal_card())
             else:
-                show()
-                print("You lose.")
-                gameplay_choice()
+                is_game_over = True
 
+    while dealer_sum != 0 and dealer_sum < 17:
+        dealer.append(deal_card())
+        dealer_sum = calculate_score(dealer)
 
+    print(f"Your final hand is {player} and score {player_sum}")
+    print(f"Dealer's final hand is {dealer} and his score is {dealer_sum}")
 
+    print(compare(player_sum, dealer_sum))
 
-
-
+while input("Do you want to play again type y or n : ") == "y":
+    os.system('cls')
+    play_game()
